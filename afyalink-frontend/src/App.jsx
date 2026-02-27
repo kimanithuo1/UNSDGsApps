@@ -23,6 +23,7 @@ import ManageFacilities from './pages/admin/Facilities.jsx'
 import ManageUsers from './pages/admin/Users.jsx'
 import SystemLogs from './pages/admin/Logs.jsx'
 import Analytics from './pages/admin/Analytics.jsx'
+import MainLayout from './layouts/MainLayout.jsx'
 
 export default function App() {
   return (
@@ -38,27 +39,15 @@ export default function App() {
         <Route
           path="/"
           element={
-            <div className="min-h-screen bg-gradient-to-b from-teal-50/50 to-white">
-              <header className="sticky top-0 z-30 bg-white/80 backdrop-blur border-b">
-                <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-3">
-                  <Link to="/" className="text-xl font-semibold text-primary">AFYALINK</Link>
-                  <nav className="flex items-center gap-2">
-                    <Link to="/" className="px-3 py-2 text-sm rounded-md hover:bg-primary/10">Home</Link>
-                    <Link to="/about" className="px-3 py-2 text-sm rounded-md hover:bg-primary/10">About</Link>
-                    <Link to="/contact" className="px-3 py-2 text-sm rounded-md hover:bg-primary/10">Contact</Link>
-                    <Link to="/login" className="px-3 py-2 text-sm rounded-md border border-primary-dark text-primary-dark hover:bg-primary/10">Login</Link>
-                    <Link to="/register" className="px-3 py-2 text-sm rounded-md bg-primary-dark text-white hover:bg-primary shadow-md">Register</Link>
-                  </nav>
-                </div>
-              </header>
+            <MainLayout>
               <Landing />
-            </div>
+            </MainLayout>
           }
         />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/about" element={<MainLayout><About /></MainLayout>} />
+        <Route path="/contact" element={<MainLayout><Contact /></MainLayout>} />
+        <Route path="/login" element={<MainLayout><Login /></MainLayout>} />
+        <Route path="/register" element={<MainLayout><Register /></MainLayout>} />
 
         <Route element={<DashboardLayout />}>
           <Route path="/patient" element={<PatientDashboard />} />
