@@ -30,7 +30,7 @@ export default function App() {
       <Link
         to="/"
         aria-label="Home"
-        className="fixed bottom-4 left-4 z-50 rounded-full bg-primary text-white px-4 py-2 shadow hover:bg-primary/90"
+        className="fixed bottom-4 left-4 z-50 rounded-full bg-primary-dark text-white px-3 py-2 shadow-md hover:bg-primary"
       >
         Home
       </Link>
@@ -40,14 +40,14 @@ export default function App() {
           element={
             <div className="min-h-screen bg-gradient-to-b from-teal-50/50 to-white">
               <header className="sticky top-0 z-30 bg-white/80 backdrop-blur border-b">
-                <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
+                <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-3">
                   <Link to="/" className="text-xl font-semibold text-primary">AFYALINK</Link>
                   <nav className="flex items-center gap-2">
-                    <Link to="/" className="px-3 py-2 text-sm rounded-lg hover:bg-gray-100">Home</Link>
-                    <Link to="/about" className="px-3 py-2 text-sm rounded-lg hover:bg-gray-100">About</Link>
-                    <Link to="/contact" className="px-3 py-2 text-sm rounded-lg hover:bg-gray-100">Contact</Link>
-                    <Link to="/login" className="px-3 py-2 text-sm rounded-lg text-primary hover:bg-teal-50">Login</Link>
-                    <Link to="/register" className="px-3 py-2 text-sm rounded-lg bg-primary text-white hover:bg-primary/90 shadow-sm">Register</Link>
+                    <Link to="/" className="px-3 py-2 text-sm rounded-md hover:bg-primary/10">Home</Link>
+                    <Link to="/about" className="px-3 py-2 text-sm rounded-md hover:bg-primary/10">About</Link>
+                    <Link to="/contact" className="px-3 py-2 text-sm rounded-md hover:bg-primary/10">Contact</Link>
+                    <Link to="/login" className="px-3 py-2 text-sm rounded-md border border-primary-dark text-primary-dark hover:bg-primary/10">Login</Link>
+                    <Link to="/register" className="px-3 py-2 text-sm rounded-md bg-primary-dark text-white hover:bg-primary shadow-md">Register</Link>
                   </nav>
                 </div>
               </header>
