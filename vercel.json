@@ -5,6 +5,6 @@
   ],
   "routes": [
     { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "afyalink-frontend/index.html" }
+    { "src": "/(.*)", "dest": "afyalink-frontend/dist/index.html" }
   ]
 }
