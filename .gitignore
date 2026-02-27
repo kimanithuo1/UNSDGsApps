@@ -1,0 +1,32 @@
+# Node / Vite
+node_modules/
+dist/
+.vercel/
+
+# Python / Django
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+build/
+develop-eggs/
+*.egg-info/
+*.egg
+db.sqlite3
+staticfiles/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+afyalink_backend/.env
