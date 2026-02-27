@@ -179,3 +179,8 @@ AFYALINK_ROLES = ('Patient', 'Practitioner', 'Facility Admin', 'Super Admin')
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Email
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@afyalink.local')
+CONTACT_EMAIL_TO = os.environ.get('CONTACT_EMAIL_TO', 'jtechbyteinsights@gmail.com')

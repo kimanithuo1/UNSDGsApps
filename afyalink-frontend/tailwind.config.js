@@ -12,6 +12,8 @@ export default {
           dark: "#0f766e",
         },
         accent: "#f0fdf4",
+        navy: "#0f172a",
+        muted: "#64748B",
       },
       fontFamily: {
         sans: ["Inter", "ui-sans-serif", "system-ui"],
