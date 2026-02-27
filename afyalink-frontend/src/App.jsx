@@ -23,7 +23,7 @@ import ManageFacilities from './pages/admin/Facilities.jsx'
 import ManageUsers from './pages/admin/Users.jsx'
 import SystemLogs from './pages/admin/Logs.jsx'
 import Analytics from './pages/admin/Analytics.jsx'
-import './App.css'
+ 
 
 export default function App() {
   return (
