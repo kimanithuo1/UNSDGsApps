@@ -25,16 +25,25 @@ import SystemLogs from './pages/admin/Logs.jsx'
 import Analytics from './pages/admin/Analytics.jsx'
  
 
-export default function App() {
   return (
+    <>
+      <Link
+        to="/"
+        aria-label="Home"
+        className="fixed bottom-4 left-4 z-50 rounded-full bg-primary text-white px-4 py-2 shadow hover:bg-primary/90"
+      >
+        Home
+      </Link>
+      <Routes>
     <Routes>
       <Route
         path="/"
         element={
           <div className="min-h-screen bg-gradient-to-b from-teal-50/50 to-white">
             <header className="sticky top-0 z-30 bg-white/80 backdrop-blur border-b">
-              <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
                 <Link to="/" className="text-xl font-semibold text-primary">AFYALINK</Link>
+                <Link to="/" className="text-xl font-semibold text-primary">AFYALINK</Link>
+                    <Link to="/" className="px-3 py-2 text-sm rounded-lg hover:bg-gray-100">Home</Link>
                 <nav className="flex items-center gap-2">
                   <Link to="/about" className="px-3 py-2 text-sm rounded-lg hover:bg-gray-100">About</Link>
                   <Link to="/contact" className="px-3 py-2 text-sm rounded-lg hover:bg-gray-100">Contact</Link>
@@ -70,10 +79,7 @@ export default function App() {
 
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/facilities" element={<ManageFacilities />} />
-        <Route path="/admin/users" element={<ManageUsers />} />
+      </Routes>
+    </>
         <Route path="/admin/logs" element={<SystemLogs />} />
         <Route path="/admin/analytics" element={<Analytics />} />
-      </Route>
-    </Routes>
-  )
-}

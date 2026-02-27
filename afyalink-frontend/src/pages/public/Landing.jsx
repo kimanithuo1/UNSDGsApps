@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 export default function Landing() {
   return (
     <div className="max-w-7xl mx-auto px-6 py-16">
@@ -9,12 +10,12 @@ export default function Landing() {
           Secure records, timely reminders, and insightful monitoring built for low-bandwidth environments.
         </p>
         <div className="mt-6 flex justify-center gap-3">
-          <a href="/register" className="rounded-xl bg-primary px-5 py-3 text-white shadow-sm hover:bg-primary/90">
+          <Link to="/register" className="rounded-xl bg-primary px-5 py-3 text-white shadow-sm hover:bg-primary/90">
             Get started
-          </a>
-          <a href="/about" className="rounded-xl px-5 py-3 border bg-white hover:bg-gray-50">
+          </Link>
+          <Link to="/about" className="rounded-xl px-5 py-3 border bg-white hover:bg-gray-50">
             Learn more
-          </a>
+          </Link>
         </div>
       </div>
 
