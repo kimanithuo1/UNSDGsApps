@@ -15,10 +15,10 @@ export default function Landing() {
           Secure records, timely reminders, and insightful monitoring built for low-bandwidth environments.
         </p>
         <div className="mt-5 flex justify-center gap-3">
-          <Link to="/register" className="rounded-lg bg-primary-dark px-6 py-3 text-white shadow-md hover:bg-primary">
+          <Link to="/register" className="rounded-lg bg-[#0f766e] px-6 py-3 text-white shadow-md hover:bg-[#14b8a6]">
             Get started
           </Link>
-          <Link to="/about" className="rounded-lg px-6 py-3 border border-primary-dark text-primary-dark bg-white hover:bg-primary/5">
+          <Link to="/about" className="rounded-lg px-6 py-3 border border-[#0f766e] text-[#0f766e] bg-white hover:bg-[#14b8a6]/5">
             Learn more
           </Link>
         </div>

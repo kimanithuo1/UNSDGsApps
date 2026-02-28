@@ -31,7 +31,7 @@ export default function App() {
       <Link
         to="/"
         aria-label="Home"
-        className="fixed bottom-4 left-4 z-50 rounded-full bg-primary-dark text-white px-3 py-2 shadow-md hover:bg-primary"
+        className="fixed bottom-4 left-4 z-50 rounded-full bg-[#0f766e] text-white px-3 py-2 shadow-md hover:bg-[#14b8a6]"
       >
         Home
       </Link>
