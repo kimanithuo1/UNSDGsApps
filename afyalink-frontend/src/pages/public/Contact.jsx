@@ -36,10 +36,10 @@ export default function Contact() {
         <div className={`mt-3 text-sm ${status.type === 'success' ? 'text-teal-700' : 'text-red-600'}`}>{status.msg}</div>
       )}
       <form className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={handleSubmit}>
-        <input name="name" value={form.name} onChange={handleChange} className="w-full rounded-lg border p-3 focus:ring focus:ring-primary/30" placeholder="Name" aria-label="Name" />
-        <input name="email" value={form.email} onChange={handleChange} className="w-full rounded-lg border p-3 focus:ring focus:ring-primary/30" placeholder="Email" aria-label="Email" type="email" />
-        <textarea name="message" value={form.message} onChange={handleChange} className="md:col-span-2 w-full rounded-lg border p-3 focus:ring focus:ring-primary/30" placeholder="Message" rows={4} aria-label="Message" />
-        <button className="md:col-span-2 rounded-lg bg-primary-dark px-6 py-3 text-white shadow-md hover:bg-primary" type="submit">Send</button>
+        <input name="name" value={form.name} onChange={handleChange} className="w-full rounded-lg border p-3 focus:ring focus:ring-[#14b8a6]/30" placeholder="Name" aria-label="Name" />
+        <input name="email" value={form.email} onChange={handleChange} className="w-full rounded-lg border p-3 focus:ring focus:ring-[#14b8a6]/30" placeholder="Email" aria-label="Email" type="email" />
+        <textarea name="message" value={form.message} onChange={handleChange} className="md:col-span-2 w-full rounded-lg border p-3 focus:ring focus:ring-[#14b8a6]/30" placeholder="Message" rows={4} aria-label="Message" />
+        <button className="md:col-span-2 rounded-lg bg-[#0f766e] px-6 py-3 text-white font-semibold shadow-md hover:bg-[#14b8a6]" type="submit">Send</button>
       </form>
       <div className="mt-6 text-sm text-gray-700">
         <p>Email: support@afyalink.example</p>
