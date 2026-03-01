@@ -42,7 +42,7 @@ export default function Contact() {
         <button className="md:col-span-2 rounded-lg bg-[#0f766e] px-6 py-3 text-white font-semibold shadow-md hover:bg-[#14b8a6]" type="submit">Send</button>
       </form>
       <div className="mt-6 text-sm text-gray-700">
-        <p>Email: support@afyalink.example</p>
+        <p>Email: jtechbyteinsights@gmail.com</p>
       </div>
     </div>
   )
