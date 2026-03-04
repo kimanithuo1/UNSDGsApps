@@ -18,14 +18,14 @@ class RegisterSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
     role = serializers.ChoiceField(choices=['Patient', 'Practitioner', 'Facility Admin'])
-    facility_code = serializers.CharField(required=False, allow_blank=True)
+    location = serializers.CharField(required=False, allow_blank=True)
 
     def create(self, validated_data):
         name = validated_data['name']
         email = validated_data['email']
         password = validated_data['password']
         role = validated_data['role']
-        facility_code = validated_data.get('facility_code')
+        location = validated_data.get('location', '').strip()
 
         username = email
         first, *rest = name.split(' ')
@@ -35,18 +35,20 @@ class RegisterSerializer(serializers.Serializer):
         user.groups.add(group)
 
         facility = None
-        if facility_code:
-            facility = Facility.objects.filter(code=facility_code).first()
+        if location:
+            # generate a simple code from location
+            code = location.upper().replace(' ', '-')[:50] or 'GEN-FAC'
+            facility = Facility.objects.filter(name=location).first()
             if not facility:
-                facility = Facility.objects.create(name=f'Facility {facility_code}', code=facility_code)
+                facility = Facility.objects.create(name=location, code=code)
 
         if role == 'Patient':
             if not facility:
-                raise serializers.ValidationError('Facility is required for Patient')
+                raise serializers.ValidationError('Location is required for Patient')
             PatientProfile.objects.create(user=user, facility=facility)
         elif role == 'Practitioner':
             if not facility:
-                raise serializers.ValidationError('Facility is required for Practitioner')
+                raise serializers.ValidationError('Location is required for Practitioner')
             PractitionerProfile.objects.create(user=user, facility=facility)
 
         return user

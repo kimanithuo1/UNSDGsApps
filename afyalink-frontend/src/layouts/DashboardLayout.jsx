@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
-import api from '../../lib/api'
+import api from '../lib/api'
 
 const roleNav = {
   patient: [
