@@ -24,6 +24,7 @@ import ManageUsers from './pages/admin/Users.jsx'
 import SystemLogs from './pages/admin/Logs.jsx'
 import Analytics from './pages/admin/Analytics.jsx'
 import MainLayout from './layouts/MainLayout.jsx'
+import BroadcastReminders from './pages/admin/BroadcastReminders.jsx'
 
 export default function App() {
   return (
@@ -68,6 +69,7 @@ export default function App() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/facilities" element={<ManageFacilities />} />
           <Route path="/admin/users" element={<ManageUsers />} />
+          <Route path="/admin/reminders" element={<BroadcastReminders />} />
           <Route path="/admin/logs" element={<SystemLogs />} />
           <Route path="/admin/analytics" element={<Analytics />} />
         </Route>

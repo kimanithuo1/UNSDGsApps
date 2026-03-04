@@ -1,18 +1,26 @@
 import { useState, useEffect } from 'react'
-import api from '../lib/api'
+import api from '../../lib/api'
 
-export function ManageFacilities() {
+export default function ManageFacilities() {
   const [facilities, setFacilities] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ name: '', code: '', address: '' })
   const [status, setStatus] = useState({ type: '', msg: '' })
 
-  const load = () => {
-    setLoading(true)
-    api.get('facilities/').then(r => setFacilities(r.data)).catch(() => {}).finally(() => setLoading(false))
-  }
-  useEffect(load, [])
+  useEffect(() => {
+    let cancelled = false
+    const run = async () => {
+      try {
+        const r = await api.get('facilities/')
+        if (!cancelled) setFacilities(r.data)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    run()
+    return () => { cancelled = true }
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -22,7 +30,8 @@ export function ManageFacilities() {
       setStatus({ type: 'success', msg: `Facility "${form.name}" created with code ${form.code}.` })
       setForm({ name: '', code: '', address: '' })
       setShowForm(false)
-      load()
+      const r = await api.get('facilities/')
+      setFacilities(r.data)
     } catch (err) {
       const msg = Object.values(err.response?.data || {}).flat().join(' ') || 'Failed to create facility.'
       setStatus({ type: 'error', msg })

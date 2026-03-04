@@ -1,4 +1,4 @@
-export function SystemLogs() {
+export default function SystemLogs() {
   return (
     <div className="space-y-5">
       <div>

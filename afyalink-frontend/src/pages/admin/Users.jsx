@@ -1,4 +1,7 @@
-export function ManageUsers() {
+import { useEffect, useState } from 'react'
+import api from '../../lib/api'
+
+export default function ManageUsers() {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

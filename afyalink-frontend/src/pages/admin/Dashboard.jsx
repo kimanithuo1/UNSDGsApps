@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import api from '../lib/api'
+import api from '../../lib/api'
 
 function StatCard({ icon, label, value, sub, color }) {
   return (
