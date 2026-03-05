@@ -19,6 +19,7 @@ class RegisterSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
     role = serializers.ChoiceField(choices=['Patient', 'Practitioner', 'Facility Admin'])
     location = serializers.CharField(required=False, allow_blank=True)
+    phone = serializers.CharField(required=False, allow_blank=True)
 
     def create(self, validated_data):
         name = validated_data['name']
@@ -26,6 +27,7 @@ class RegisterSerializer(serializers.Serializer):
         password = validated_data['password']
         role = validated_data['role']
         location = validated_data.get('location', '').strip()
+        phone = validated_data.get('phone', '').strip()
 
         username = email
         first, *rest = name.split(' ')
@@ -45,7 +47,7 @@ class RegisterSerializer(serializers.Serializer):
         if role == 'Patient':
             if not facility:
                 raise serializers.ValidationError('Location is required for Patient')
-            PatientProfile.objects.create(user=user, facility=facility)
+            PatientProfile.objects.create(user=user, facility=facility, phone=phone)
         elif role == 'Practitioner':
             if not facility:
                 raise serializers.ValidationError('Location is required for Practitioner')
