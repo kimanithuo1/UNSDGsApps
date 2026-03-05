@@ -10,7 +10,8 @@ export default function Register() {
     email: '',
     password: '',
     role: 'Patient',
-    facility_code: '',
+    location: '',
+    phone: '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -18,7 +19,7 @@ export default function Register() {
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
 
-  const needsFacility = form.role === 'Patient' || form.role === 'Practitioner'
+  const needsLocation = form.role === 'Patient' || form.role === 'Practitioner'
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -28,8 +29,12 @@ export default function Register() {
       setError('Name, email, and password are required.')
       return
     }
-    if (needsFacility && !form.facility_code.trim()) {
-      setError('Facility code is required for Patient and Practitioner roles.')
+    if (needsLocation && !form.location.trim()) {
+      setError('Location is required for Patient and Practitioner roles.')
+      return
+    }
+    if (needsLocation && !form.phone.trim()) {
+      setError('Phone number is required for Patient and Practitioner roles.')
       return
     }
 
@@ -162,24 +167,41 @@ export default function Register() {
               </select>
             </div>
 
-            {/* Conditionally show facility code — hidden for Facility Admin */}
-            {needsFacility && (
+            {/* Conditionally show location & phone — hidden for Facility Admin */}
+            {needsLocation && (
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5" htmlFor="facility_code">
-                  Facility Code *
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5" htmlFor="location">
+                  Location (Clinic/Facility Name) *
                 </label>
                 <input
-                  id="facility_code"
-                  name="facility_code"
-                  value={form.facility_code}
+                  id="location"
+                  name="location"
+                  value={form.location}
                   onChange={handleChange}
                   className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/40 focus:border-[#0f766e] transition"
-                  placeholder="Ask your clinic for their facility code"
+                  placeholder="e.g., Nairobi Community Clinic"
                   disabled={loading}
                 />
                 <p className="mt-1 text-xs text-gray-400">
-                  Your clinic or hospital will provide this code. If you don't have one, contact your facility.
+                  We’ll use this to link you to the correct facility and enable records sharing.
                 </p>
+                <div className="mt-4">
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5" htmlFor="phone">
+                    Phone (for SMS reminders) *
+                  </label>
+                  <input
+                    id="phone"
+                    name="phone"
+                    value={form.phone}
+                    onChange={handleChange}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/40 focus:border-[#0f766e] transition"
+                    placeholder="0712345678 or +254712345678"
+                    disabled={loading}
+                  />
+                  <p className="mt-1 text-xs text-gray-400">
+                    Used for appointment and medication reminders (SMS works offline).
+                  </p>
+                </div>
               </div>
             )}
 

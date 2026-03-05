@@ -235,6 +235,22 @@ class PatientSearchView(APIView):
             })
         return Response(data)
 
+class PatientPhoneUpdateView(APIView):
+    permission_classes = [permissions.IsAuthenticated, IsFacilityAdmin]
+
+    def post(self, request):
+        patient_id = request.data.get('patient_id')
+        phone = request.data.get('phone', '').strip()
+        if not patient_id or not phone:
+            return Response({'detail': 'patient_id and phone are required.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            profile = PatientProfile.objects.get(id=patient_id)
+        except PatientProfile.DoesNotExist:
+            return Response({'detail': 'Patient not found.'}, status=status.HTTP_404_NOT_FOUND)
+        profile.phone = phone
+        profile.save(update_fields=['phone'])
+        return Response({'detail': 'Phone updated.', 'patient_id': profile.id, 'phone': profile.phone}, status=status.HTTP_200_OK)
+
 class MedicalRecordView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
