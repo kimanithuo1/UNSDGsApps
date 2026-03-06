@@ -239,16 +239,46 @@ class PrescriptionView(APIView):
         medication_name = request.data.get('medication_name', '').strip()
         dosage          = request.data.get('dosage', '').strip()
         instructions    = request.data.get('instructions', '')
+        frequency       = request.data.get('frequency', 'twice_daily')
+        duration_days   = request.data.get('duration_days')
+        with_food       = request.data.get('with_food', 'with')
+
         if not patient_id or not medication_name or not dosage:
             return Response({'detail': 'patient, medication_name and dosage are required.'}, status=status.HTTP_400_BAD_REQUEST)
         try:
             patient = PatientProfile.objects.select_related('user', 'facility').get(id=patient_id)
-        except PatientProfile.DoesNotExist:
-            return Response({'detail': 'Patient not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except (PatientProfile.DoesNotExist, ValueError):
+            return Response({'detail': f'Patient "{patient_id}" not found.'}, status=status.HTTP_404_NOT_FOUND)
+
         med, _ = Medication.objects.get_or_create(name=medication_name)
-        presc = Prescription.objects.create(patient=patient, medication=med, dosage=dosage, instructions=instructions, facility=patient.facility, created_by=request.user)
+
+        # Build duration_days safely
+        dur = None
+        if duration_days is not None:
+            try:
+                dur = int(duration_days)
+            except (ValueError, TypeError):
+                dur = None
+
+        presc = Prescription.objects.create(
+            patient=patient,
+            medication=med,
+            dosage=dosage,
+            frequency=frequency,
+            duration_days=dur,
+            with_food=with_food,
+            instructions=instructions,
+            facility=patient.facility,
+            created_by=request.user,
+        )
+
+        # Send SMS with full dosage schedule
         if patient.phone:
-            send_medication_reminder(patient.phone, patient.user.get_full_name() or patient.user.username, medication_name)
+            name = patient.user.get_full_name() or patient.user.username
+            # Use the generated instruction string if provided, otherwise build a simple one
+            sms_body = instructions or f'Hi {name}, you have been prescribed {medication_name} {dosage}. {instructions or "Take as directed by your doctor."} — AFYALINK'
+            send_sms(patient.phone, sms_body[:320])   # SMSLeopard max ~320 chars for 2 SMS
+
         return Response({'id': presc.id}, status=status.HTTP_201_CREATED)
 
 

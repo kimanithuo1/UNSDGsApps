@@ -191,3 +191,16 @@ CONTACT_EMAIL_TO = os.environ.get('CONTACT_EMAIL_TO', 'jtechbyteinsights@gmail.c
 # ── MISC ─────────────────────────────────────────────────────────────────────
 AFYALINK_ROLES = ('Patient', 'Practitioner', 'Facility Admin', 'Super Admin')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ── JWT LIFETIME (added fix) ──────────────────────────────────────────────────
+# Default SimpleJWT access token = 5 MINUTES — caused search to fail after a
+# few uses ("check your internet connection" = silent 401 after token expired).
+# api.js now auto-refreshes on 401, but longer lifetime reduces friction.
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME':    timedelta(days=1),    # was 5 minutes
+    'REFRESH_TOKEN_LIFETIME':   timedelta(days=30),   # stay logged in for 30 days
+    'ROTATE_REFRESH_TOKENS':    True,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'AUTH_HEADER_TYPES':        ('Bearer',),
+}

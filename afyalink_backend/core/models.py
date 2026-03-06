@@ -139,12 +139,30 @@ class Medication(models.Model):
 
 
 class Prescription(models.Model):
+    FREQUENCY_CHOICES = [
+        ('once_daily',  'Once daily'),
+        ('twice_daily', 'Twice daily'),
+        ('three_daily', 'Three times daily'),
+        ('four_daily',  'Four times daily'),
+        ('every_8h',    'Every 8 hours'),
+        ('every_12h',   'Every 12 hours'),
+        ('weekly',      'Once a week'),
+        ('as_needed',   'As needed (PRN)'),
+    ]
+    WITH_FOOD_CHOICES = [
+        ('with',    'With food'),
+        ('without', 'Empty stomach'),
+        ('either',  'Either way'),
+    ]
     patient = models.ForeignKey(
         PatientProfile, on_delete=models.CASCADE, related_name='prescriptions'
     )
     medication = models.ForeignKey(Medication, on_delete=models.CASCADE)
-    dosage = models.CharField(max_length=255)
-    instructions = models.TextField(blank=True)
+    dosage        = models.CharField(max_length=255)
+    frequency     = models.CharField(max_length=20, choices=FREQUENCY_CHOICES, default='twice_daily', blank=True)
+    duration_days = models.IntegerField(null=True, blank=True, help_text='0 = ongoing')
+    with_food     = models.CharField(max_length=10, choices=WITH_FOOD_CHOICES, default='with', blank=True)
+    instructions  = models.TextField(blank=True)
     facility = models.ForeignKey(
         Facility, null=True, blank=True,
         on_delete=models.SET_NULL, related_name='prescriptions'
