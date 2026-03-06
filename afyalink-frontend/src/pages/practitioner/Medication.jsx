@@ -1,3 +1,14 @@
+/**
+ * AddMedication.jsx  — v2
+ * New fields vs previous version:
+ *  - medication_name (existing)
+ *  - dosage — e.g. "500mg" (existing)
+ *  - frequency — how many times per day (new dropdown)
+ *  - duration_days — how many days to take it (new)
+ *  - instructions — free text (existing, now auto-generated from above)
+ *  - next_review_date — when to come back (new, creates an Appointment automatically)
+ *  - SMS sent on save includes the full dosage schedule
+ */
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../../lib/api'
@@ -141,7 +152,7 @@ function buildInstructions(form) {
   return `Take ${form.dosage} ${freq}${dur ? ' ' + dur : ''}${timing}.${food}${form.extra_instructions ? ' ' + form.extra_instructions : ''}`
 }
 
-export default function AddMedication() {
+export function AddMedication() {
   const [patient, setPatient] = useState(null)
   const [form, setForm] = useState({
     medication_name: '',
