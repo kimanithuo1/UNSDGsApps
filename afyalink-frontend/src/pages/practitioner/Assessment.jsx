@@ -1,74 +1,221 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import api from '../../lib/api'
 
+// ─── shared primitives ────────────────────────────────────────────────────────
 
-function FormShell({ title, sub, children, onSubmit, loading, status, cta = 'Save' }) {
+const ic = 'w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/40 focus:border-[#0f766e] transition bg-white disabled:opacity-60 disabled:bg-gray-50'
+
+function Spinner() {
   return (
-    <div className="space-y-5 max-w-xl">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-        {sub && <p className="text-sm text-gray-500 mt-0.5">{sub}</p>}
-      </div>
-      <form onSubmit={onSubmit} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-        {status?.msg && (
-          <div className={`text-sm px-4 py-3 rounded-xl border ${status.type === 'success' ? 'bg-teal-50 text-teal-800 border-teal-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
-            {status.msg}
-          </div>
-        )}
-        {children}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-xl bg-[#0f766e] text-white font-semibold py-3 shadow-md hover:bg-[#14b8a6] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-        >
-          {loading ? (
-            <><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> Saving…</>
-          ) : cta}
-        </button>
-      </form>
-    </div>
+    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+    </svg>
   )
 }
 
-function Field({ label, children }) {
+function StatusBanner({ status }) {
+  if (!status?.msg) return null
+  const s = { success:'bg-teal-50 text-teal-800 border-teal-200', error:'bg-red-50 text-red-700 border-red-200', info:'bg-sky-50 text-sky-800 border-sky-200' }
+  return <div className={`text-sm px-4 py-3 rounded-xl border ${s[status.type]||s.info}`}>{status.msg}</div>
+}
+
+function FieldRow({ label, hint, children }) {
   return (
     <div>
       <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">{label}</label>
       {children}
+      {hint && <p className="text-xs text-gray-400 mt-1">{hint}</p>}
     </div>
   )
 }
 
-const inputCls = "w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/40 focus:border-[#0f766e] transition"
+/** Pill showing confirmed patient — always visible once selected */
+function PatientPill({ patient, onClear }) {
+  if (!patient) return null
+  const name = [patient.user?.first_name, patient.user?.last_name].filter(Boolean).join(' ') || patient.user?.username || `Patient #${patient.id}`
+  return (
+    <div className="flex items-center justify-between bg-teal-50 border border-teal-200 rounded-xl px-4 py-3">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="w-9 h-9 rounded-full bg-[#0f766e] text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
+          {name[0]?.toUpperCase() || 'P'}
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-gray-900 truncate">{name}</p>
+          <p className="text-xs text-gray-500 truncate">
+            ID: {patient.id}
+            {patient.facility?.name ? ` · ${patient.facility.name}` : ''}
+            {patient.phone ? ` · 📱 ${patient.phone}` : ' · ⚠️ No phone'}
+          </p>
+        </div>
+      </div>
+      {onClear && (
+        <button type="button" onClick={onClear}
+          className="ml-3 text-xs text-gray-400 hover:text-red-500 transition-colors flex-shrink-0 font-medium">
+          ✕ Change
+        </button>
+      )}
+    </div>
+  )
+}
 
-export function AddAssessment() {
-  const [form, setForm] = useState({ patient_id: '', notes: '', facility_id: '' })
+/**
+ * Reusable patient finder widget.
+ * Accepts a string query (name / email / ID), hits GET /api/patients/?search=
+ * If exactly one result → calls onFound(patient).
+ * If multiple → shows a short pick list.
+ * Auto-fires when initialId is a numeric string (coming from URL param).
+ */
+function PatientFinder({ onFound, initialId = '', disabled = false }) {
+  const [q,       setQ]       = useState('')
+  const [results, setResults] = useState([])
   const [loading, setLoading] = useState(false)
-  const [status, setStatus] = useState(null)
+  const [msg,     setMsg]     = useState('')
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!form.patient_id || !form.notes) { setStatus({ type: 'error', msg: 'Patient ID and assessment notes are required.' }); return }
+  // When navigated here from SearchPatient with ?patient=ID, auto-resolve
+  useEffect(() => {
+    if (initialId && !isNaN(Number(initialId))) {
+      resolveById(initialId)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialId])
+
+  const resolveById = async (id) => {
     setLoading(true)
+    setMsg('')
     try {
-      await api.post('records/', { patient: form.patient_id, assessment: form.notes, facility: form.facility_id })
-      setStatus({ type: 'success', msg: 'Assessment saved successfully.' })
-      setForm({ patient_id: '', notes: '', facility_id: '' })
+      const r = await api.get(`patients/?search=${id}`)
+      const match = r.data.find(p => String(p.id) === String(id))
+      if (match) { onFound(match); return }
+      if (r.data.length === 1) { onFound(r.data[0]); return }
+      setMsg(`Patient ID ${id} not found.`)
     } catch (err) {
-      setStatus({ type: 'error', msg: Object.values(err.response?.data || {}).flat().join(' ') || 'Failed to save assessment.' })
-    } finally {
-      setLoading(false) }
+      setMsg(err.response?.status === 403
+        ? 'Your account needs admin approval before you can look up patients.'
+        : 'Search failed. Check your connection.')
+    } finally { setLoading(false) }
+  }
+
+  const search = async (e) => {
+    e?.preventDefault()
+    const query = q.trim()
+    if (!query) return
+    setLoading(true)
+    setMsg('')
+    setResults([])
+    try {
+      const r = await api.get(`patients/?search=${encodeURIComponent(query)}`)
+      if (r.data.length === 0) {
+        setMsg(`No patients found for "${query}". Try their email or full name.`)
+      } else if (r.data.length === 1) {
+        onFound(r.data[0])
+      } else {
+        setResults(r.data)   // multiple → show mini list
+      }
+    } catch (err) {
+      setMsg(err.response?.status === 403
+        ? 'Your account needs admin approval before you can look up patients.'
+        : 'Search failed. Check your connection.')
+    } finally { setLoading(false) }
   }
 
   return (
-    <FormShell title="📝 Add Medical Assessment" sub="Record clinical findings and visit notes for a patient." onSubmit={handleSubmit} loading={loading} status={status} cta="Save Assessment">
-      <Field label="Patient ID *">
-        <input className={inputCls} placeholder="Patient user ID" value={form.patient_id} onChange={e => setForm(f => ({ ...f, patient_id: e.target.value }))} />
-        <p className="text-xs text-gray-400 mt-1">Use Search Patient to find the correct ID.</p>
-      </Field>
-      <Field label="Assessment Notes *">
-        <textarea className={`${inputCls} resize-none`} rows={5} placeholder="Describe findings, observations, chief complaint…" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
-      </Field>
-    </FormShell>
+    <div className="space-y-2">
+      {/* Search row */}
+      <div className="flex gap-2">
+        <input
+          className={`${ic} flex-1`}
+          placeholder="Patient ID, name, or email…"
+          value={q}
+          onChange={e => { setQ(e.target.value); setMsg(''); setResults([]) }}
+          onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), search())}
+          disabled={loading || disabled}
+        />
+        <button
+          type="button"
+          onClick={search}
+          disabled={loading || !q.trim() || disabled}
+          className="flex-shrink-0 flex items-center gap-2 bg-[#0f766e] text-white px-4 py-3 rounded-xl text-sm font-semibold hover:bg-[#14b8a6] transition-colors disabled:opacity-60"
+        >
+          {loading ? <Spinner /> : '🔍'}
+          {!loading && 'Find'}
+        </button>
+      </div>
+      {/* Messages */}
+      {msg && <p className="text-xs text-red-600 flex gap-1"><span>⚠️</span>{msg}</p>}
+      {/* Multiple results mini-list */}
+      {results.length > 1 && (
+        <div className="border border-gray-100 rounded-xl overflow-hidden bg-white shadow-sm">
+          <p className="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-100">{results.length} patients found — select one</p>
+          {results.map(p => {
+            const name = [p.user?.first_name, p.user?.last_name].filter(Boolean).join(' ') || p.user?.username
+            return (
+              <button key={p.id} type="button"
+                onClick={() => { onFound(p); setResults([]); setQ('') }}
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-teal-50 transition-colors text-left border-b border-gray-50 last:border-0">
+                <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-xs font-bold text-[#0f766e] flex-shrink-0">
+                  {name[0]?.toUpperCase() || 'P'}
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{name}</p>
+                  <p className="text-xs text-gray-400">ID: {p.id} · {p.facility?.name || 'No facility'}</p>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function AddAssessment() {
+  const [searchParams] = useSearchParams()
+  const initialId = searchParams.get('patient') || ''
+  const [patient, setPatient] = useState(null)
+  const [notes,   setNotes]   = useState('')
+  const [loading, setLoading] = useState(false)
+  const [status,  setStatus]  = useState(null)
+
+  const submit = async (e) => {
+    e.preventDefault()
+    if (!patient) { setStatus({ type:'error', msg:'Please find and confirm a patient first.' }); return }
+    if (!notes.trim()) { setStatus({ type:'error', msg:'Assessment notes are required.' }); return }
+    setLoading(true); setStatus(null)
+    try {
+      await api.post('records/', { patient: patient.id, assessment: notes })
+      setStatus({ type:'success', msg:'✅ Assessment saved successfully.' })
+      setNotes(''); setPatient(null)
+    } catch (err) {
+      const data = err.response?.data
+      setStatus({ type:'error', msg: data?.detail || 'Failed to save assessment.' })
+    } finally { setLoading(false) }
+  }
+
+  return (
+    <div className="space-y-5 max-w-xl">
+      <div className="flex items-center gap-3">
+        <Link to="/practitioner/search" className="text-gray-400 hover:text-gray-600 text-xl leading-none transition-colors">←</Link>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">📝 Add Assessment</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Record clinical observations for a patient</p>
+        </div>
+      </div>
+      <form onSubmit={submit} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+        <StatusBanner status={status} />
+        <FieldRow label="Patient *">
+          {patient ? <PatientPill patient={patient} onClear={() => setPatient(null)} /> : <PatientFinder onFound={setPatient} initialId={initialId} />}
+        </FieldRow>
+        <FieldRow label="Assessment Notes *">
+          <textarea className={`${ic} resize-none`} rows={5} placeholder="Chief complaint, examination findings, plan…"
+            value={notes} onChange={e => setNotes(e.target.value)} disabled={loading} />
+        </FieldRow>
+        <button type="submit" disabled={loading || !patient || !notes.trim()}
+          className="w-full rounded-xl bg-[#0f766e] text-white font-semibold py-3.5 shadow-md hover:bg-[#14b8a6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          {loading ? <><Spinner/>Saving…</> : '💾 Save Assessment'}
+        </button>
+      </form>
+    </div>
   )
 }

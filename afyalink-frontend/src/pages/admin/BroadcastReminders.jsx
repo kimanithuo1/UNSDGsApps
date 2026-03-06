@@ -223,17 +223,7 @@ export default function BroadcastReminders() {
         </button>
       </form>
 
-      {/* Setup note */}
-      <div className="rounded-2xl border border-blue-100 bg-blue-50 p-5">
-        <h3 className="font-bold text-sm text-blue-900 mb-2">🔧 Backend Setup Required</h3>
-        <p className="text-xs text-blue-800 leading-relaxed">
-          To activate SMS/WhatsApp sending, add a <strong>Twilio</strong> or <strong>Beem Africa</strong> integration to your Django backend.
-          Install <code className="bg-blue-100 px-1 rounded">twilio</code>, add your <code className="bg-blue-100 px-1 rounded">TWILIO_ACCOUNT_SID</code>,
-          <code className="bg-blue-100 px-1 rounded">TWILIO_AUTH_TOKEN</code>, and <code className="bg-blue-100 px-1 rounded">TWILIO_PHONE_NUMBER</code> as
-          Render environment variables, then create a <code className="bg-blue-100 px-1 rounded">POST /api/reminders/broadcast/</code> endpoint
-          that queues messages via Celery or sends immediately.
-        </p>
-      </div>
+      
     </div>
   )
 }

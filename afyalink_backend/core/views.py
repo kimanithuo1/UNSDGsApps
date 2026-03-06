@@ -174,13 +174,40 @@ class AppointmentView(APIView):
         patient_id = request.data.get('patient') or request.data.get('patient_id')
         date_str   = request.data.get('date')
         notes      = request.data.get('notes', '')
-        if not patient_id or not date_str:
-            return Response({'detail': 'patient and date are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not patient_id:
+            return Response({'detail': 'patient is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not date_str:
+            return Response({'detail': 'date is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             patient = PatientProfile.objects.select_related('user', 'facility').get(id=patient_id)
         except PatientProfile.DoesNotExist:
-            return Response({'detail': 'Patient not found.'}, status=status.HTTP_404_NOT_FOUND)
-        appt = Appointment.objects.create(patient=patient, facility=patient.facility, date=date_str, notes=notes, created_by=request.user)
+            return Response({'detail': f'No patient found with ID {patient_id}. Use Search Patient to find the correct ID.'}, status=status.HTTP_404_NOT_FOUND)
+        except ValueError:
+            return Response({'detail': f'"{patient_id}" is not a valid patient ID. Use the Search Patient tool to find the correct numeric ID.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # ── ROOT CAUSE OF 500 ─────────────────────────────────────────────
+        # patient.facility is NULL for self-registered patients.
+        # Old DB schema had Appointment.facility as NOT NULL → IntegrityError.
+        # Fix: models.py now has null=True on Appointment.facility.
+        # If the migration hasn't been applied yet, the except block below catches it
+        # and returns a helpful message instead of an HTML 500 page.
+        try:
+            appt = Appointment.objects.create(
+                patient=patient,
+                facility=patient.facility,   # may be None — allowed by updated model
+                date=date_str,
+                notes=notes,
+                created_by=request.user,
+            )
+        except Exception as exc:
+            return Response(
+                {'detail': f'Could not save appointment: {exc}. '
+                           'If this is a database error, run: python manage.py makemigrations && python manage.py migrate'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         sms_sent = False
         if patient.phone:
             name = patient.user.get_full_name() or patient.user.username
@@ -190,6 +217,7 @@ class AppointmentView(APIView):
             except Exception:
                 date_human = str(date_str)
             sms_sent = send_appointment_reminder(patient.phone, name, date_human, facility_name).get('success', False)
+
         return Response({'id': appt.id, 'sms_sent': sms_sent}, status=status.HTTP_201_CREATED)
 
 
